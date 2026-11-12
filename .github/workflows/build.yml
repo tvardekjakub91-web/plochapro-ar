@@ -1,0 +1,33 @@
+# Sestaví iPhone apku na Macu od GitHubu (zdarma pro veřejné repozitáře).
+# Výsledek: v záložce Actions → poslední běh → Artifacts → PlochaProAR-ipa (zip s .ipa).
+name: Sestavit iPhone apku
+on:
+  push:
+    branches: [main]
+  workflow_dispatch: {}
+jobs:
+  build:
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Ikona apky
+        run: |
+          mkdir -p Assets.xcassets/AppIcon.appiconset
+          echo '{"info":{"author":"xcode","version":1}}' > Assets.xcassets/Contents.json
+          curl -fsSL -o icon-512.png https://tvardekjakub91-web.github.io/plochapro/icon-512.png
+          sips -s format png -z 1024 1024 icon-512.png --out Assets.xcassets/AppIcon.appiconset/icon-1024.png
+          echo '{"images":[{"filename":"icon-1024.png","idiom":"universal","platform":"ios","size":"1024x1024"}],"info":{"author":"xcode","version":1}}' > Assets.xcassets/AppIcon.appiconset/Contents.json
+      - name: Vytvořit Xcode projekt
+        run: brew install xcodegen && xcodegen generate
+      - name: Sestavit (bez podpisu – podepíše Sideloadly)
+        run: |
+          xcodebuild -project PlochaProAR.xcodeproj -target PlochaProAR -configuration Release -sdk iphoneos \
+            SYMROOT="$PWD/build" CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY="" build
+      - name: Zabalit .ipa
+        run: |
+          mkdir -p Payload && cp -R build/Release-iphoneos/PlochaProAR.app Payload/
+          zip -qry PlochaProAR.ipa Payload
+      - uses: actions/upload-artifact@v4
+        with:
+          name: PlochaProAR-ipa
+          path: PlochaProAR.ipa
