@@ -1,0 +1,36 @@
+name: PlochaProAR
+options:
+  bundleIdPrefix: cz.plochapro
+  deploymentTarget:
+    iOS: "16.0"
+targets:
+  PlochaProAR:
+    type: application
+    platform: iOS
+    sources:
+      - path: PlochaProARApp.swift
+      - path: ContentView.swift
+      - path: ARMeasureView.swift
+      - path: MeasureModel.swift
+      - path: Assets.xcassets
+    info:
+      path: Info.plist
+      properties:
+        CFBundleDisplayName: PlochaPro AR
+        CFBundleShortVersionString: "1.0"
+        CFBundleVersion: "1"
+        NSCameraUsageDescription: Kamera je potřeba k měření v rozšířené realitě.
+        UILaunchScreen: {}
+        UIRequiredDeviceCapabilities: [arkit]
+        UISupportedInterfaceOrientations: [UIInterfaceOrientationPortrait]
+        UIApplicationSceneManifest:
+          UIApplicationSupportsMultipleScenes: false
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: cz.plochapro.ar
+        TARGETED_DEVICE_FAMILY: "1"
+        SWIFT_VERSION: "5.0"
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        CODE_SIGNING_ALLOWED: "NO"
+        CODE_SIGNING_REQUIRED: "NO"
+        CODE_SIGN_IDENTITY: ""
