@@ -41,10 +41,18 @@ struct ContentView: View {
     private var info: some View {
         VStack(alignment: .leading, spacing: 4) {
             if !model.status.isEmpty { Text(model.status).font(.footnote).foregroundStyle(.yellow) }
-            if model.mode == .area {
+            if model.mode == .circle {
+                if let c = model.circle {
+                    Text("\(MeasureModel.num(c.area, 2)) m²").font(.title2.bold()).foregroundStyle(.orange)
+                    Text("r = \(MeasureModel.len(c.radius))  ·  Ø \(MeasureModel.len(2 * c.radius))  ·  obvod \(MeasureModel.len(c.circumference))").font(.footnote)
+                    Text("Bodů: \(model.points.count)  ·  odchylka ±\(MeasureModel.len(c.rms))\(model.points.count < 6 ? "  ·  víc bodů = přesnější" : "")").font(.caption)
+                } else {
+                    Text("Míři na okraj kruhu a mačkej ＋ na různých místech obvodu. Stačí 3 body, víc bodů = přesnější.").font(.footnote)
+                }
+            } else if model.mode == .area {
                 if model.points.count >= 3 {
                     Text("\(MeasureModel.num(model.area, 2)) m²").font(.title2.bold()).foregroundStyle(.orange)
-                    Text("Obvod \(MeasureModel.len(model.perimeter))\(model.closed ? "" : " · neuzavřeno")").font(.footnote)
+                    Text("Obvod \(MeasureModel.len(model.perimeter))  ·  bodů: \(model.points.count)\(model.closed ? "" : " · neuzavřeno")").font(.footnote)
                 } else {
                     Text("Míři křížkem na rohy a mačkej ＋. Uzavřeš tlačítkem nebo míření na první bod.").font(.footnote)
                 }

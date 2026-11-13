@@ -84,7 +84,7 @@ struct ARMeasureView: UIViewRepresentable {
             if model.aimValid != (hit != nil) { model.aimValid = hit != nil }
 
             // živá čára od posledního bodu
-            let last: SIMD3<Float>? = model.closed ? nil : model.points.last
+            let last: SIMD3<Float>? = (model.closed || model.mode == .circle) ? nil : model.points.last
             if let a = last, let b = model.aim {
                 place(line: liveLine, from: a, to: b, color: UIColor.white.withAlphaComponent(0.85), radius: 0.0012)
                 liveLine.isHidden = false
@@ -115,6 +115,10 @@ struct ARMeasureView: UIViewRepresentable {
             for s in model.segments { addSegment(s.a, s.b, label: MeasureModel.len(s.length)) }
             let pts = model.points
             pts.forEach { addDot($0) }
+            if model.mode == .circle {
+                if let c = model.circle { addCircle(c) }
+                return
+            }
             if pts.count >= 2 {
                 for i in 0..<(pts.count - 1) { addSegment(pts[i], pts[i + 1], label: MeasureModel.len(simd_distance(pts[i], pts[i + 1]))) }
                 if model.closed {
@@ -122,6 +126,36 @@ struct ARMeasureView: UIViewRepresentable {
                     addAreaLabel(pts)
                 }
             }
+        }
+
+        private func addCircle(_ c: MeasureModel.Circle3D) {
+            let ring = SCNTorus(ringRadius: CGFloat(c.radius), pipeRadius: 0.002)
+            ring.ringSegmentCount = 96
+            ring.firstMaterial?.diffuse.contents = orange
+            ring.firstMaterial?.lightingModel = .constant
+            let n = SCNNode(geometry: ring)
+            n.simdPosition = c.center
+            n.simdOrientation = simd_quatf(from: SIMD3<Float>(0, 1, 0), to: c.normal)   // torus leží v rovině XZ
+            root.addChildNode(n)
+            // výplň
+            let disc = SCNCylinder(radius: CGFloat(c.radius), height: 0.0005)
+            disc.radialSegmentCount = 96
+            disc.firstMaterial?.diffuse.contents = orange.withAlphaComponent(0.25)
+            disc.firstMaterial?.lightingModel = .constant
+            disc.firstMaterial?.isDoubleSided = true
+            let dn = SCNNode(geometry: disc); dn.simdPosition = c.center; dn.simdOrientation = n.simdOrientation
+            root.addChildNode(dn)
+            // střed + poloměr k prvnímu bodu
+            addDot(c.center)
+            if let p0 = model.points.first {
+                var dir = p0 - c.center; dir -= simd_dot(dir, c.normal) * c.normal
+                if simd_length(dir) > 1e-6 {
+                    let edge = c.center + simd_normalize(dir) * c.radius
+                    let line = SCNNode(); place(line: line, from: c.center, to: edge, color: .white, radius: 0.0012); root.addChildNode(line)
+                    addText("r = \(MeasureModel.len(c.radius))", at: (c.center + edge) / 2 + SIMD3(0, 0.01, 0), size: max(0.012, min(c.radius * 0.08, 0.1)), color: .white)
+                }
+            }
+            addText("\(MeasureModel.num(c.area, 2)) m²", at: c.center + SIMD3(0, 0.03, 0), size: max(0.02, min(c.radius * 0.15, 0.25)), color: orange)
         }
 
         private func addDot(_ p: SIMD3<Float>) {
