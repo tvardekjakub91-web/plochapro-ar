@@ -12,12 +12,13 @@ targets:
       - path: ContentView.swift
       - path: ARMeasureView.swift
       - path: MeasureModel.swift
+      - path: PDFExport.swift
       - path: Assets.xcassets
     info:
       path: Info.plist
       properties:
         CFBundleDisplayName: PlochaPro AR
-        CFBundleShortVersionString: "1.0"
+        CFBundleShortVersionString: "1.1"
         CFBundleVersion: "1"
         NSCameraUsageDescription: Kamera je potřeba k měření v rozšířené realitě.
         UILaunchScreen: {}

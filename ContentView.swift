@@ -31,6 +31,19 @@ struct ContentView: View {
                         .background(Color.black.opacity(0.6), in: Capsule())
                         .foregroundStyle(Color.white)
                 }
+                if PDFExport.canExport(model) {
+                    Button {
+                        if let url = PDFExport.make(model: model, photo: model.snapshot?() as? UIImage) {
+                            share = ShareItem(items: [url])
+                        }
+                    } label: {
+                        Label("PDF výkres", systemImage: "doc.richtext")
+                            .font(.headline)
+                            .padding(.horizontal, 18).padding(.vertical, 10)
+                            .background(Color.orange, in: Capsule())
+                            .foregroundStyle(Color.black)
+                    }
+                }
                 buttons
             }
             .padding()
